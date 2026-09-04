@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SMARTSTOCK</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div class="login-container" id="loginPage">
+
+    <div class="login-box">
+
+        <h1>SMARTSTOCK</h1>
+
+        <p>Inventory & Billing Management System</p>
+
+        <input type="text"
+               id="username"
+               placeholder="Username">
+
+        <input type="password"
+               id="password"
+               placeholder="Password">
+
+        <button onclick="login()">LOGIN</button>
+
+        <p>New user?</p>
+
+        <button onclick="showSignup()">SIGN UP</button>
+
+        <p id="error"></p>
+
+    </div>
+
+</div>
+
+
+<!-- SIGN UP PAGE -->
+<div class="login-container"
+     id="signupPage"
+     style="display: none;">
+
+    <div class="login-box">
+
+        <h1>Create Account</h1>
+
+        <input type="text"
+               id="newUsername"
+               placeholder="Create Username">
+
+        <input type="password"
+               id="newPassword"
+               placeholder="Create Password">
+
+        <input type="password"
+               id="confirmPassword"
+               placeholder="Confirm Password">
+
+        <button onclick="signup()">
+            CREATE ACCOUNT
+        </button>
+
+        <p>Already have an account?</p>
+
+        <button onclick="showLogin()">
+            BACK TO LOGIN
+        </button>
+
+        <p id="signupError"></p>
+
+    </div>
+
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboardPage">
+
+    <!-- HEADER -->
+    <header>
+
+        <h1>SMARTSTOCK</h1>
+
+        <button onclick="logout()">
+            Logout
+        </button>
+
+    </header>
+
+
+    <!-- MENU -->
+    <aside>
+
+        <h2>MENU</h2>
+
+        <button onclick="showDashboard()">
+            Dashboard
+        </button>
+
+        <button onclick="showProducts()">
+            Products
+        </button>
+
+        <button onclick="showStock()">
+            Stock
+        </button>
+
+        <button onclick="showBilling()">
+            Billing
+        </button>
+
+        <button onclick="showReports()">
+            Sales Reports
+        </button>
+
+        <hr>
+
+        <button onclick="showSignup()">
+            Sign Up
+        </button>
+
+        <button onclick="logout()">
+            Logout
+        </button>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main>
+
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboardSection">
+
+            <h2>Dashboard</h2>
+
+            <div class="cards">
+
+                <div class="card">
+                    <h3>Total Products</h3>
+                    <strong id="totalProducts">0</strong>
+                </div>
+
+                <div class="card">
+                    <h3>Total Stock</h3>
+                    <strong id="totalStock">0</strong>
+                </div>
+
+                <div class="card">
+                    <h3>Today's Sales</h3>
+                    <strong id="todaySales">Rs. 0</strong>
+                </div>
+
+                <div class="card">
+                    <h3>Low Stock</h3>
+                    <strong id="lowStock">0</strong>
+                </div>
+
+            </div>
+
+            <div class="welcome">
+
+                <h2>Welcome to SMARTSTOCK</h2>
+
+                <p>
+                    Manage your products, stock and billing easily.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- PRODUCTS SECTION -->
+        <section id="productsSection"
+                 class="hidden">
+
+            <h2>Product Management</h2>
+
+            <div class="form-box">
+
+                <input type="text"
+                       id="productName"
+                       placeholder="Product Name">
+
+                <input type="number"
+                       id="productPrice"
+                       placeholder="Price">
+
+                <input type="number"
+                       id="productQuantity"
+                       placeholder="Quantity">
+
+                <button onclick="addProduct()">
+                    Add Product
+                </button>
+
+            </div>
+
+
+            <!-- NEW: SEARCH -->
+            <input type="text"
+                   id="searchProduct"
+                   placeholder="Search Product"
+                   onkeyup="searchProducts()">
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="productTable">
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- STOCK SECTION -->
+        <section id="stockSection"
+                 class="hidden">
+
+            <h2>Stock Management</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Available Quantity</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="stockTable">
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+        <!-- BILLING SECTION -->
+        <section id="billingSection"
+                 class="hidden">
+
+            <h2>Billing</h2>
+
+            <div class="form-box">
+
+                <!-- NEW -->
+                <input type="text"
+                       id="customerName"
+                       placeholder="Customer Name">
+
+                <input type="text"
+                       id="billProduct"
+                       placeholder="Product Name">
+
+                <input type="number"
+                       id="billQuantity"
+                       placeholder="Quantity">
+
+                <button onclick="createBill()">
+                    Create Bill
+                </button>
+
+            </div>
+
+            <div id="billResult"
+                 class="bill-box">
+            </div>
+
+            <!-- NEW -->
+            <button id="printButton"
+                    onclick="printBill()">
+                Print Invoice
+            </button>
+
+        </section>
+
+
+        <!-- SALES REPORT SECTION -->
+        <section id="reportsSection"
+                 class="hidden">
+
+            <h2>Sales Reports</h2>
+
+            <div class="welcome">
+
+                <h3>Total Sales</h3>
+
+                <p id="salesReport">
+                    Rs. 0
+                </p>
+
+            </div>
+
+
+            <!-- NEW: SALES HISTORY -->
+            <h3>Sales History</h3>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="salesHistory">
+                </tbody>
+
+            </table>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
