@@ -1,71 +1,94 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let totalSales = Number(localStorage.getItem("totalSales")) || 0;
+let salesHistory = JSON.parse(localStorage.getItem("salesHistory")) || [];
 
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    doc,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-/* ================= FIREBASE ================= */
-
-const firebaseConfig = {
-    apiKey: "AIzaSyAHlgY9kvIVelwycybmuI2Wf2NrBS81AJw",
-    authDomain: "smartstock-8ef85.firebaseapp.com",
-    projectId: "smartstock-8ef85",
-    storageBucket: "smartstock-8ef85.firebasestorage.app",
-    messagingSenderId: "294915046928",
-    appId: "1:294915046928:web:d8307c245ec11a28e71495"
+/* PAGE LOAD */
+window.onload = function () {
+    updateProductTable();
+    updateStockTable();
+    updateDashboard();
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
+/* LOGIN */
+function login() {
 
-/* ================= DATA ================= */
+    const username =
+        document.getElementById("username").value.trim();
 
-let products = [];
-let salesHistory = [];
-let totalSales = 0;
+    const password =
+        document.getElementById("password").value.trim();
 
+    const savedUsername =
+        localStorage.getItem("smartstockUsername");
 
-/* ================= PAGE FUNCTIONS ================= */
+    const savedPassword =
+        localStorage.getItem("smartstockPassword");
 
-function showSignup() {
-    document.getElementById("loginPage").style.display = "none";
-    document.getElementById("signupPage").style.display = "flex";
-    document.getElementById("dashboardPage").style.display = "none";
+    if (
+        (username === "admin" && password === "1234") ||
+        (username === savedUsername && password === savedPassword)
+    ) {
+
+        document.getElementById("loginPage").style.display = "none";
+
+        document.getElementById("signupPage").style.display = "none";
+
+        document.getElementById("dashboardPage").style.display = "block";
+
+        document.getElementById("error").innerText = "";
+
+        showDashboard();
+        updateDashboard();
+
+    } else {
+
+        document.getElementById("error").innerText =
+            "Invalid username or password!";
+
+    }
 }
+
+
+/* LOGOUT */
+function logout() {
+
+    document.getElementById("dashboardPage").style.display = "none";
+
+    document.getElementById("loginPage").style.display = "flex";
+
+    document.getElementById("username").value = "";
+
+    document.getElementById("password").value = "";
+
+}
+
+
+/* SIGN UP */
+function showSignup() {
+
+    document.getElementById("dashboardPage").style.display = "none";
+
+    document.getElementById("loginPage").style.display = "none";
+
+    document.getElementById("signupPage").style.display = "flex";
+
+}
+
 
 function showLogin() {
-    document.getElementById("loginPage").style.display = "flex";
+
     document.getElementById("signupPage").style.display = "none";
-    document.getElementById("dashboardPage").style.display = "none";
+
+    document.getElementById("loginPage").style.display = "flex";
+
 }
 
 
-/* ================= SIGN UP ================= */
+function signup() {
 
-async function signup() {
-
-    const username = document
-        .getElementById("newUsername")
-        .value
-        .trim();
+    const username =
+        document.getElementById("newUsername").value.trim();
 
     const password =
         document.getElementById("newPassword").value;
@@ -73,164 +96,525 @@ async function signup() {
     const confirmPassword =
         document.getElementById("confirmPassword").value;
 
-    const error =
-        document.getElementById("signupError");
+    if (username === "" || password === "") {
 
+        document.getElementById("signupError").innerText =
+            "Please fill all details!";
 
-    if (!username || !password || !confirmPassword) {
-        error.innerText = "Please fill all details!";
         return;
     }
-
-
-    if (username.includes("@")) {
-        error.innerText =
-            "Username should not contain @";
-        return;
-    }
-
 
     if (password !== confirmPassword) {
-        error.innerText = "Passwords do not match!";
+
+        document.getElementById("signupError").innerText =
+            "Passwords do not match!";
+
         return;
     }
 
+    localStorage.setItem("smartstockUsername", username);
 
-    if (password.length < 6) {
-        error.innerText =
-            "Password must be at least 6 characters!";
+    localStorage.setItem("smartstockPassword", password);
+
+    alert("Account created successfully!");
+
+    showLogin();
+
+}
+
+
+/* HIDE ALL SECTIONS */
+function hideAll() {
+
+    document.getElementById("dashboardSection")
+        .classList.add("hidden");
+
+    document.getElementById("productsSection")
+        .classList.add("hidden");
+
+    document.getElementById("stockSection")
+        .classList.add("hidden");
+
+    document.getElementById("billingSection")
+        .classList.add("hidden");
+
+    document.getElementById("reportsSection")
+        .classList.add("hidden");
+
+}
+
+
+/* SHOW DASHBOARD */
+function showDashboard() {
+
+    hideAll();
+
+    document.getElementById("dashboardSection")
+        .classList.remove("hidden");
+
+    updateDashboard();
+
+}
+
+
+/* SHOW PRODUCTS */
+function showProducts() {
+
+    hideAll();
+
+    document.getElementById("productsSection")
+        .classList.remove("hidden");
+
+    updateProductTable();
+
+}
+
+
+/* SHOW STOCK */
+function showStock() {
+
+    hideAll();
+
+    document.getElementById("stockSection")
+        .classList.remove("hidden");
+
+    updateStockTable();
+
+}
+
+
+/* SHOW BILLING */
+function showBilling() {
+
+    hideAll();
+
+    document.getElementById("billingSection")
+        .classList.remove("hidden");
+
+}
+
+
+/* SHOW REPORTS */
+function showReports() {
+
+    hideAll();
+
+    document.getElementById("reportsSection")
+        .classList.remove("hidden");
+
+    document.getElementById("salesReport").innerText =
+        "Rs. " + totalSales;
+
+    updateSalesHistory();
+
+}
+
+
+/* SAVE PRODUCTS */
+function saveProducts() {
+
+    localStorage.setItem(
+        "products",
+        JSON.stringify(products)
+    );
+
+}
+
+
+/* ADD PRODUCT */
+function addProduct() {
+
+    const name =
+        document.getElementById("productName").value.trim();
+
+    const price =
+        Number(document.getElementById("productPrice").value);
+
+    const quantity =
+        Number(document.getElementById("productQuantity").value);
+
+    if (name === "" || price <= 0 || quantity <= 0) {
+
+        alert("Please enter valid product details.");
+
         return;
     }
 
+    products.push({
+        name: name,
+        price: price,
+        quantity: quantity
+    });
 
-    try {
+    saveProducts();
 
-        const email =
-            username.toLowerCase() + "@smartstock.app";
+    updateProductTable();
+    updateStockTable();
+    updateDashboard();
 
-        await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+    document.getElementById("productName").value = "";
 
-        alert("Account created successfully!");
+    document.getElementById("productPrice").value = "";
 
-        document.getElementById("newUsername").value = "";
-        document.getElementById("newPassword").value = "";
-        document.getElementById("confirmPassword").value = "";
+    document.getElementById("productQuantity").value = "";
 
-        await signOut(auth);
+    alert("Product added successfully!");
 
-        showLogin();
+}
 
-    } catch (err) {
 
-        console.error(err);
+/* PRODUCT TABLE */
+function updateProductTable(productList = products) {
 
-        if (err.code === "auth/email-already-in-use") {
+    const table =
+        document.getElementById("productTable");
 
-            error.innerText =
-                "Username already exists!";
+    table.innerHTML = "";
 
-        } else if (err.code === "auth/invalid-email") {
+    productList.forEach(function (product) {
 
-            error.innerText =
-                "Invalid username!";
+        const index =
+            products.indexOf(product);
 
-        } else if (err.code === "auth/weak-password") {
+        table.innerHTML +=
+            "<tr>" +
+            "<td>" + product.name + "</td>" +
+            "<td>Rs. " + product.price + "</td>" +
+            "<td>" + product.quantity + "</td>" +
+            "<td>" +
+            "<button onclick='editProduct(" + index + ")'>Edit</button> " +
+            "<button onclick='deleteProduct(" + index + ")'>Delete</button>" +
+            "</td>" +
+            "</tr>";
 
-            error.innerText =
-                "Password must be at least 6 characters!";
+    });
 
-        } else {
+}
 
-            error.innerText =
-                "Account could not be created!";
+
+/* EDIT PRODUCT */
+function editProduct(index) {
+
+    const product = products[index];
+
+    const newName =
+        prompt("Product Name:", product.name);
+
+    if (newName === null || newName.trim() === "") {
+        return;
+    }
+
+    const newPrice =
+        Number(prompt("Product Price:", product.price));
+
+    if (newPrice <= 0) {
+
+        alert("Invalid price!");
+
+        return;
+    }
+
+    const newQuantity =
+        Number(prompt("Product Quantity:", product.quantity));
+
+    if (newQuantity < 0) {
+
+        alert("Invalid quantity!");
+
+        return;
+    }
+
+    products[index] = {
+        name: newName.trim(),
+        price: newPrice,
+        quantity: newQuantity
+    };
+
+    saveProducts();
+
+    updateProductTable();
+    updateStockTable();
+    updateDashboard();
+
+    alert("Product updated successfully!");
+
+}
+
+
+/* DELETE PRODUCT */
+function deleteProduct(index) {
+
+    const productName =
+        products[index].name;
+
+    const result =
+        confirm("Delete " + productName + "?");
+
+    if (result) {
+
+        products.splice(index, 1);
+
+        saveProducts();
+
+        updateProductTable();
+        updateStockTable();
+        updateDashboard();
+
+        alert("Product deleted successfully!");
+
+    }
+
+}
+
+
+/* SEARCH PRODUCT */
+function searchProducts() {
+
+    const search =
+        document.getElementById("searchProduct")
+            .value
+            .toLowerCase();
+
+    const filteredProducts =
+        products.filter(function (product) {
+
+            return product.name
+                .toLowerCase()
+                .includes(search);
+
+        });
+
+    updateProductTable(filteredProducts);
+
+}
+
+
+/* STOCK TABLE */
+function updateStockTable() {
+
+    const table =
+        document.getElementById("stockTable");
+
+    table.innerHTML = "";
+
+    products.forEach(function (product) {
+
+        let status = "In Stock";
+
+        if (product.quantity === 0) {
+
+            status = "Out of Stock";
+
+        } else if (product.quantity <= 5) {
+
+            status = "Low Stock";
 
         }
-    }
+
+        table.innerHTML +=
+            "<tr>" +
+            "<td>" + product.name + "</td>" +
+            "<td>Rs. " + product.price + "</td>" +
+            "<td>" + product.quantity + "</td>" +
+            "<td>" + status + "</td>" +
+            "</tr>";
+
+    });
+
 }
 
 
-/* ================= LOGIN ================= */
+/* UPDATE DASHBOARD */
+function updateDashboard() {
 
-async function login() {
+    let totalStock = 0;
 
-    const username =
-        document.getElementById("username")
-            .value
-            .trim();
+    let lowStock = 0;
 
-    const password =
-        document.getElementById("password")
-            .value;
+    products.forEach(function (product) {
 
-    const error =
-        document.getElementById("error");
+        totalStock += product.quantity;
+
+        if (product.quantity <= 5) {
+            lowStock++;
+        }
+
+    });
+
+    document.getElementById("totalProducts").innerText =
+        products.length;
+
+    document.getElementById("totalStock").innerText =
+        totalStock;
+
+    document.getElementById("lowStock").innerText =
+        lowStock;
+
+    document.getElementById("todaySales").innerText =
+        "Rs. " + totalSales;
+
+}
 
 
-    if (!username || !password) {
+/* CREATE BILL */
+function createBill() {
 
-        error.innerText =
-            "Please enter username and password!";
+    const customerName =
+        document.getElementById("customerName").value.trim();
+
+    const productName =
+        document.getElementById("billProduct").value.trim();
+
+    const quantity =
+        Number(document.getElementById("billQuantity").value);
+
+    if (
+        customerName === "" ||
+        productName === "" ||
+        quantity <= 0
+    ) {
+
+        alert("Please enter all billing details.");
 
         return;
     }
 
+    const product =
+        products.find(function (item) {
 
-    if (username.includes("@")) {
+            return item.name.toLowerCase() ===
+                productName.toLowerCase();
 
-        error.innerText =
-            "Enter username only, not email.";
+        });
+
+    if (!product) {
+
+        alert("Product not found!");
 
         return;
     }
 
+    if (quantity > product.quantity) {
 
-    try {
+        alert("Not enough stock available!");
 
-        const email =
-            username.toLowerCase() + "@smartstock.app";
-
-        await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
-
-        error.innerText = "";
-
-    } catch (err) {
-
-        console.error(err);
-
-        error.innerText =
-            "Invalid username or password!";
+        return;
     }
+
+    product.quantity -= quantity;
+
+    const total =
+        product.price * quantity;
+
+    totalSales += total;
+
+    const dateTime =
+        new Date().toLocaleString();
+
+    salesHistory.push({
+        date: dateTime,
+        customer: customerName,
+        product: product.name,
+        quantity: quantity,
+        total: total
+    });
+
+    saveProducts();
+
+    localStorage.setItem(
+        "totalSales",
+        totalSales
+    );
+
+    localStorage.setItem(
+        "salesHistory",
+        JSON.stringify(salesHistory)
+    );
+
+    document.getElementById("billResult").innerHTML =
+        "<h3>SMARTSTOCK INVOICE</h3>" +
+        "<hr><br>" +
+        "<p><b>Date:</b> " + dateTime + "</p>" +
+        "<p><b>Customer:</b> " + customerName + "</p>" +
+        "<p><b>Product:</b> " + product.name + "</p>" +
+        "<p><b>Price:</b> Rs. " + product.price + "</p>" +
+        "<p><b>Quantity:</b> " + quantity + "</p>" +
+        "<h3>Total: Rs. " + total + "</h3>";
+
+    updateProductTable();
+    updateStockTable();
+    updateDashboard();
+    updateSalesHistory();
+
+    document.getElementById("customerName").value = "";
+
+    document.getElementById("billProduct").value = "";
+
+    document.getElementById("billQuantity").value = "";
+
+    alert("Bill created successfully!");
+
 }
 
 
-/* ================= LOGOUT ================= */
+/* SALES HISTORY */
+function updateSalesHistory() {
 
-async function logout() {
+    const table =
+        document.getElementById("salesHistory");
 
-    try {
+    table.innerHTML = "";
 
-        await signOut(auth);
+    salesHistory.forEach(function (sale) {
 
-    } catch (err) {
+        table.innerHTML +=
+            "<tr>" +
+            "<td>" + sale.date + "</td>" +
+            "<td>" + sale.customer + "</td>" +
+            "<td>" + sale.product + "</td>" +
+            "<td>" + sale.quantity + "</td>" +
+            "<td>Rs. " + sale.total + "</td>" +
+            "</tr>";
 
-        console.error(err);
+    });
 
-    }
 }
 
 
-/* ================= AUTH STATE ================= */
+/* PRINT BILL */
+function printBill() {
 
-onAuthStateChanged(auth, async (user) => {
+    const bill =
+        document.getElementById("billResult").innerHTML;
 
-    if (user) {
+    if (bill.trim() === "") {
 
-        document.getElement
+        alert("Please create a bill first!");
+
+        return;
+    }
+
+    const printWindow =
+        window.open("", "", "width=800,height=600");
+
+    printWindow.document.write(
+        "<html>" +
+        "<head>" +
+        "<title>SMARTSTOCK Invoice</title>" +
+        "<style>" +
+        "body{font-family:Arial;padding:40px;}" +
+        "h2,h3{text-align:center;}" +
+        "p{font-size:18px;}" +
+        "</style>" +
+        "</head>" +
+        "<body>" +
+        bill +
+        "</body>" +
+        "</html>"
+    );
+
+    printWindow.document.close();
+
+    printWindow.print();
+
+}
